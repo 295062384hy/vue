@@ -25,11 +25,11 @@
     height 100%
     background #f5f5f5
     position relative
-    .content  //每个页面的内容
+   // .content  //每个页面的内容
 
-      >div //决定哪个页面显示
-        display none
-        &.on
-          display block
+     // >div //决定哪个页面显示
+      //  display none
+    //    &.on
+      //    display block
 </style>
 

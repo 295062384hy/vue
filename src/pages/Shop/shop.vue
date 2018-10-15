@@ -19,7 +19,10 @@
   import ShopHeader from '../../components/ShopHeader/ShopHeader.vue'
   export default {
     components:{
-      ShopHeader
+      ShopHeader,
+    },
+    mounted(){
+      this.$store.dispatch('getInfo')
     }
   }
 
@@ -51,5 +54,4 @@
             height 2px
             transform translateX(-50%)
             background #02a774
-
 </style>

@@ -22,7 +22,6 @@ export default {
       for (let i = 0; i <score-arr.length; i++) {
         arr.push('off')
       }
-      console.log(score)
       return arr
     },
   }
