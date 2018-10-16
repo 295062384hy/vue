@@ -2,15 +2,15 @@
   <div>
     <div class="goods">
       <div class="menu-wrapper">
-        <ul>
-          <li class="menu-item " v-for="(good,index) in goods" :key="index" :class="{current:index===0}">
+        <ul ref="typesUl">
+          <li class="menu-item " v-for="(good,index) in goods" :key="index" :class="{current:index===currentIndex}" @click="selectItem(index)">
             <img class="icon" :src="good.icon" v-if="good.icon">
             <span class="text bottom-border-1px">{{good.name}}</span>
           </li>
         </ul>
       </div>
       <div class="foods-wrapper">
-        <ul>
+        <ul ref="foodsUl">
           <li class="food-list-hook" v-for="(good,index) in goods" :key="index">
             <h1 class="title">{{good.name}}</h1>
             <ul>
@@ -51,24 +51,52 @@
   export default {
     data(){
       return{
-        food:{}
+        food:{},
+        scrollY: 0, // 右侧列表Y轴方向滑动的坐标
+        tops: [], // 右侧分类li的top值组成的数据
+      }
+    },
+
+    computed:{
+      ...mapState(['goods']),
+      // 当前分类的下标
+      currentIndex () {
+        const {scrollY,tops}=this
+        const index=tops.findIndex((top,index)=>scrollY>=top && scrollY<tops[index+1])
+//        console.log(index)
+        if(this.index!=index){
+          this.index=index
+          if(this.leftScroll) {
+            this.leftScroll.scrollToElement(this.$refs.typesUl.children[index], 200)
+
+          }
+        }
+//        console.log(index)
+        return index
       }
     },
     mounted (){
       this.$store.dispatch('getGoods',()=>{
-        new BScroll('.foods-wrapper',{
-          click: true
-        })
+//        new BScroll('.foods-wrapper',{
+//          click: true
+//        })
+//
+//        new BScroll('.menu-wrapper',{
+//          click: true
+//        })
+        this.$nextTick(()=>{
+          // 初始化滚动对象
+          this._initScroll()
+          // 初始化tops数据
+          this._initTops()
 
-        new BScroll('.menu-wrapper',{
-          click: true
         })
 
       })
+
+
     },
-    computed:{
-      ...mapState(['goods'])
-    },
+
     components:{
       ShopCart,
       Food
@@ -77,6 +105,49 @@
       showFood(food){ //用来对点击的食物详情进行显示
         this.food=food
         this.$refs.foods.toggleShow()
+      },
+      _initTops () {
+        const tops = []
+        let top = 0
+        tops.push(top)
+        // 得到所有分类li的伪数组
+//        const lis = this.$refs.foodsUl.querySelectorAll('.food-list-hook')
+        const lis = this.$refs.foodsUl.querySelectorAll(' .food-list-hook')
+//        console.log(lis)
+        lis.forEach(li => {
+          top += li.clientHeight
+
+          tops.push(top)
+        })
+
+        // 更新状态
+        this.tops = tops
+  },
+      _initScroll () {
+        this.rightScroll= new BScroll('.foods-wrapper',{
+          click: true,
+          probeType: 1
+        })
+
+        this.leftScroll= new BScroll('.menu-wrapper',{
+          click: true
+        })
+
+        this.rightScroll.on('scroll',({x,y})=>{
+          this.scrollY=Math.abs(y)
+        })
+        this.rightScroll.on('scrollEnd',({x,y})=>{
+          this.scrollY=Math.abs(y)
+        })
+
+      },
+      selectItem(index){
+        // 得到index对应的目标位置的y坐标
+        const y = -this.tops[index]
+        // 立即更新scrollY
+        this.scrollY = -y
+        // 让右侧列表滚动到此处
+        this.rightScroll.scrollTo(0, y, 300)
       }
     },
   }
